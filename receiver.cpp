@@ -24,8 +24,8 @@ int main(int argc, char *argv[])
     cout << "Receiver " << y << ", PID " << receiverPID << ",begins execution" << endl;
     cout << "Receiver " << y << ", PID " << receiverPID << ", received message queue id " << msgid << " through commandline argument" << endl;
 
+    // receiving message from message queue using msgrcv
     msg_buffer message;
-
     ssize_t received = msgrcv(msgid, &message, sizeof(message.message_content), y, 0);
     if (received==-1) 
     {

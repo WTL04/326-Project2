@@ -56,6 +56,8 @@ int main(int argc, char *argv[])
 
     }
 
+
+    // receiving acknowledgements from receivers
     for (int i = 1; i <= x; ++i)
     {
         msg_buffer acknowledgement;
