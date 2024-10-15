@@ -1,3 +1,4 @@
+#include <cstddef>
 #include <iostream>
 #include <unistd.h>  // For getpid()
 #include <sys/types.h>
@@ -31,14 +32,58 @@ int main(int argc, char *argv[])
 
     cout << "Master acuired a message queue, id " << msgid << endl;
 
-    // creating sender child
-    pid_t sender = fork();
-    if (sender == 0) 
+    // creating sender child PID
+    pid_t senderPID = fork();
+
+    if (senderPID == 0) 
     {
-        
+        // execute child using command line "./sender"
+        execl("./sender", "sender", to_string(msgid).c_str(), to_string(x).c_str(), NULL);
+    }
+    else if (senderPID > 0)
+    {
+        // create child process sender
+        cout << "Master created a child process to serve as sender, sender's PID " << senderPID << endl;
+    }
+    else 
+    {
+        // check errors
+        perror("fork sender");
+        return 1;
     }
 
-    
+
+    for (int i = 1; i<=x; ++i)
+    {
+        pid_t receiverPID = fork();
+
+        if (receiverPID == 0) 
+        {
+            // execute child using command line "./receiver"
+            execl("./receiver", "receiver", to_string(msgid).c_str(), to_string(i).c_str(), NULL);
+        }
+        else if (senderPID > 0)
+        {
+            // create child process receiver
+            cout << "Master created a child processes to serve as receiver " << i << endl;
+        }
+        else 
+        {
+            // check errors
+            perror("fork receiver");
+            return 1;
+        }
+    }
+
+    cout << "Master waits for all child processes to terminate" << endl;
+    for (int i = 1; i <=x; ++i)
+    {
+        // wait for child processes to terminate
+        wait(NULL);
+    }
+
+    cout << "Master received termination signals from all child processes, removed message queue, and terminates" << endl;
+    msgctl(msgid, IPC_RMID, NULL);
     
     return 0;
 }
